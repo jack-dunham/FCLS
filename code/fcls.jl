@@ -1,8 +1,48 @@
+using TimeEvolutionPEPO
+using TensorKit
 using Makie
 using CairoMakie
 using MakieExtra
 using DelimitedFiles
 using Statistics
+using DrWatson
+using Tar
+using DataFrames
+using LsqFit
+using EasyFit
+
+function extract()
+    for (root, _, files) in walkdir(datadir("raw"))
+        for file in files
+            name, ext = splitext(file)
+            if ext == ".gz"
+                @info "Extracting" filename = file
+                tarball = joinpath(root, file)
+
+                outpath =  datadir("raw", "extract", splitext(name) |> first)
+
+                if isdir(outpath)
+                    @info "Skipping"
+                    continue
+                end
+
+                Tar.list(`gzcat $tarball`)
+                Tar.extract(`gzcat $tarball`, outpath)
+            end
+        end
+    end
+
+
+    df = collect_results!(
+        datadir("pro", "results.jld2"),
+        datadir("raw", "extract"),
+        rinclude=[r".*obs"],
+        black_list=["dm", "psi", "time"],
+        subfolders=true,
+        special_list = [ data -> obs(data["dm"])]
+    )
+    return df
+end
 
 function plot_magn_length(D = 9)
     read = f -> collect(eachrow(readdlm(joinpath("data/dlm", f))))
@@ -243,4 +283,89 @@ function plotvars()
     current_figure()
 
     return fig, Tcs, Err
+end
+
+
+function plotquantum(df = extract(), D = 9)
+
+    ax = Axis(Figure()[1,1])
+
+    df = filter(row -> row["D"] == D,df)
+
+    for gdf in groupby(df, "ζ")
+
+        sort!(gdf, "χ")
+
+        xi = Float64[]
+        xi32 = Float64[]
+
+        yv = Float64[]
+
+        for i in 1:50
+
+            delt = Float64[]
+            lens = Float64[]
+
+
+            local xi32i
+            local m32i
+
+            for gdfi in groupby(gdf,"χ")
+                push!(delt, gdfi[1,"δ"][i])
+                push!(lens, gdfi[1,"ξ"][i])
+                xi32i = gdfi[1,"ξ"][i]
+                m32i = real(gdfi[1,"m"][i])
+            end
+
+            p,_, s = myfitnonlinear(delt, lens)
+            push!(xi, p[3])
+            push!(xi32, xi32i)
+            push!(yv, m32i * p[3]^(1/8) )
+        end
+        
+        # lines!(ax, xi)
+        # lines!(ax, xi32; color=:black)
+        lines!(ax, yv)
+    end
+
+    return
+end
+
+function myfitnonlinear(x, y, wt=nothing; verbose=true)
+
+    init = fitlinear(x, y)
+
+    verbose && println(init)
+
+    fitfunc(t, p) = @. p[2] * t^p[1] + p[3]
+
+    p0 = [1.0, 1.0, 1.0]
+
+    if isnothing(wt)
+        fit = curve_fit(fitfunc, x, y, [1.0, init.a, init.b])
+        # fit = curve_fit(fitfunc, x, y, p0)
+    else
+        fit = curve_fit(fitfunc, x, y, wt, [1.0, init.a, init.b])
+    end
+
+    println(fit.param)
+    println(stderror(fit))
+
+    return fit.param, t -> fitfunc(t, fit.param), stderror(fit)
+    # return fit.param, t -> fitfunc(t, fit.param), (0, 0, 0)
+end
+
+function obs(dm)
+    X,Y,Z = PAULI
+
+    rdmA = partialtrace(dm, (1, 1))
+    rdmB = partialtrace(dm, (1, 2))
+
+    zA = expval(rdmA,Z)
+    zB = expval(rdmB,Z)
+
+    return [
+        :zA => zA,
+        :zB => zB,
+    ]
 end
