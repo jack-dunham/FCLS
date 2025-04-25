@@ -1,7 +1,3 @@
-using TimeEvolutionPEPO
-using TensorKit
-using JLD2
-
 function (@main)(args)
     jobid = parse(Int, args[1])
     ζ = parse(Float64, args[2])
@@ -38,12 +34,12 @@ function (@main)(args)
     obsalg = VUMPS(; bonddim=χ, tol=1e-8, maxiter=200)
 
     try
-        simulate!(identity, sim; numsteps=300)
-        simulate!(sim; numsteps=200, maxshots=50, maxtime=20.0 * 60.0 * 60.0) do sim
+        simulate!(identity, sim; numsteps=180)
+        simulate!(sim; numsteps=40, maxshots=40, maxtime=44.0 * 60.0 * 60.0) do sim
 
             psi = quantumstate(sim)
 
-            dm = DensityMatrix(psi, obsalg)
+            dm = PurifiedDensityMatrix(psi, obsalg)
 
             eps1, eps2 = TimeEvolutionPEPO._correlationlength(dm)
 
@@ -53,7 +49,7 @@ function (@main)(args)
             mA = abs(expval(rdmA, Z))
             mB = abs(expval(rdmB, Z))
 
-            push!(time, sim.info.iterations * timestep)
+            push!(time, sim.info.iterations * 2 * timestep)
             push!(δ, abs(eps1 - eps2))
             push!(ξ, 2 / eps1)
             push!(m, 1 / 2 * (mA + mB))
@@ -65,7 +61,7 @@ function (@main)(args)
     finally
 
         psi = quantumstate(sim)
-        dm = DensityMatrix(psi, obsalg)
+        dm = PurifiedDensityMatrix(psi, obsalg)
 
         jldsave("χ=$(χ)_ζ=$(ζ)_D=$(D)_obs.jld2"; time, psi, dm, sim.info, χ, ζ, ξ, δ, D)
         jldsave("χ=$(χ)_ζ=$(ζ)_D=$(D)_sim.jld2"; sim)
