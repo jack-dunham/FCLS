@@ -4,11 +4,11 @@ using JLD2
 
 function (@main)(args)
     jobid = parse(Int, args[1])
-    ζ = parse(Float64, args[2])
+    ζexp = parse(Float64, args[2])
     D = parse(Int, args[3])
 
     χ = collect(16:32)[jobid]
-
+    ζ = exp10(ζexp)
     βc = 1 / 1.2737
 
     timestep = 0.02βc / 8
@@ -21,7 +21,7 @@ function (@main)(args)
 
     sim = Simulation(
         model,
-        fill(ThermalState(), 2, 2)
+        fill(ThermalState(), 2, 2),
         ComplexSpace(2),
         ComplexSpace(D);
         timestep=timestep,
@@ -67,7 +67,7 @@ function (@main)(args)
         psi = quantumstate(sim)
         dm = DensityMatrix(psi, obsalg)
 
-        jldsave("χ=$(χ)_ζ=$(ζ)_D=$(D)_obs.jld2"; time, psi, dm, sim.info, χ, ζ, ξ, δ, D)
+        jldsave("χ=$(χ)_ζ=$(ζ)_D=$(D)_obs.jld2"; time, psi, dm, sim.info, χ, ζ, ξ, δ, D, m)
         jldsave("χ=$(χ)_ζ=$(ζ)_D=$(D)_sim.jld2"; sim)
     end
 
