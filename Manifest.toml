@@ -1,6 +1,6 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.1"
+julia_version = "1.11.3"
 manifest_format = "2.0"
 project_hash = "7a1b6ef665bb7138c9826b655ef1cda62c43ec48"
 
@@ -1967,7 +1967,8 @@ version = "0.11.3"
 
 [[deps.TimeEvolutionPEPO]]
 deps = ["Accessors", "ChainRulesCore", "CircularArrays", "Combinatorics", "DocStringExtensions", "InfiniteTensorContractions", "KrylovKit", "LinearAlgebra", "MacroTools", "Optim", "OptimKit", "Random", "SparseArrayKit", "Statistics", "TensorKit", "TensorOperations", "TupleTools", "VectorInterface", "Zygote"]
-git-tree-sha1 = "0b5a8c28006924feeb2474632e9c05a6b9818cc5"
+git-tree-sha1 = "5b7a3718c3cb5931a491a39026386e9cb9ac2f81"
+pinned = true
 repo-rev = "v0.1.0"
 repo-url = "https://github.com/jack-dunham/TimeEvolutionPEPO.jl.git"
 uuid = "ee9a5d50-cb2d-461d-9ed1-04ffb2590b38"

@@ -63,7 +63,7 @@ function (@main)(args)
         psi = quantumstate(sim)
         dm = PurifiedDensityMatrix(psi, obsalg)
 
-        jldsave("χ=$(χ)_ζ=$(ζ)_D=$(D)_obs.jld2"; time, psi, dm, sim.info, χ, ζ, ξ, δ, D)
+        jldsave("χ=$(χ)_ζ=$(ζ)_D=$(D)_obs.jld2"; time, psi, dm, sim.info, χ, ζ, ξ, δ, D, m)
         jldsave("χ=$(χ)_ζ=$(ζ)_D=$(D)_sim.jld2"; sim)
     end
 
