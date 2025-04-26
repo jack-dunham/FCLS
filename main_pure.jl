@@ -1,10 +1,14 @@
+using TimeEvolutionPEPO
+using TensorKit
+using JLD2
+
 function (@main)(args)
     jobid = parse(Int, args[1])
-    ζ = parse(Float64, args[2])
+    ζexp = parse(Float64, args[2])
     D = parse(Int, args[3])
 
     χ = collect(16:32)[jobid]
-
+    ζ = exp10(ζexp)
     βc = 1 / 1.2737
 
     timestep = 0.02βc / 8
@@ -17,7 +21,7 @@ function (@main)(args)
 
     sim = Simulation(
         model,
-        fill(ThermalState(), 2, 2)
+        fill(ThermalState(), 2, 2),
         ComplexSpace(2),
         ComplexSpace(D);
         timestep=timestep,
@@ -31,7 +35,7 @@ function (@main)(args)
     ξ = Float64[]
     m = Float64[]
 
-    obsalg = VUMPS(; bonddim=χ, tol=1e-8, maxiter=200)
+    obsalg = VUMPS(; bonddim=χ, tol=1e-8, maxiter=100)
 
     try
         simulate!(identity, sim; numsteps=180)
