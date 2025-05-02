@@ -3,10 +3,10 @@
 # Batch script to run a serial job under SGE.
 
 # Request ten minutes of wallclock time (format hours:minutes:seconds).
-#$ -l h_rt=48:0:0
+#$ -l h_rt=24:0:0
 
 # Request 1 gigabyte of RAM (must be an integer followed by M, G, or T)
-#$ -l mem=128G
+#$ -l mem=32G
 
 # Request 15 gigabyte of TMPDIR space (default is 10 GB - remove if cluster is diskless)
 #$ -l tmpfs=10G
@@ -19,7 +19,7 @@
 # Replace "<your_UCL_id>" with your UCL user ID.
 #$ -wd /home/ucapunh/Scratch/FCLS
 
-#$ -t 1-16
+#$ -t 1-10
 #$ -V
 
 export JULIA_PKG_USE_CLI_GIT=true
