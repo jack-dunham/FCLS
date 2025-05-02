@@ -13,15 +13,18 @@ using EasyFit
 using LaTeXStrings
 using Measurements
 
-function extract()
-    for (root, _, files) in walkdir(datadir("raw"))
+function extract(dir = "")
+    for (root, _, files) in walkdir(datadir("raw", dir))
         for file in files
             name, ext = splitext(file)
             if ext == ".gz"
                 @info "Extracting" filename = file
                 tarball = joinpath(root, file)
 
-                outpath = datadir("raw", "extract", splitext(name) |> first)
+                outdir = datadir("raw", "extract", dir)
+                mkpath(outdir)
+
+                outpath = joinpath(outdir, splitext(name) |> first)
 
                 if isdir(outpath)
                     @info "Skipping"
@@ -36,8 +39,8 @@ function extract()
 
 
     df = collect_results!(
-        datadir("pro", "results.jld2"),
-        datadir("raw", "extract"),
+        datadir("pro", dir, "results.jld2"),
+        datadir("raw", "extract", dir),
         rinclude=[r".*obs"],
         black_list=["dm", "psi", "time"],
         subfolders=true,
